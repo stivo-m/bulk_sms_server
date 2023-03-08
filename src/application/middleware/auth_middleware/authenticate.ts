@@ -1,5 +1,5 @@
-import { NextFunction, Request, Response } from "express";
-import { RequestWithUser, SystemResponse } from "../../../../types";
+import { NextFunction, Response } from "express";
+import { JWTPayload, RequestWithUser, SystemResponse } from "../../../../types";
 import { db } from "../../../infrastructure/services/database/db";
 import { verifyJWT } from "../../utils/encryption_utils";
 
@@ -24,9 +24,11 @@ export const authenticate = async (
 	const token = bearer.split(" ")[1];
 
 	try {
-		const id = verifyJWT<string>(token);
+		const payload = verifyJWT<JWTPayload>(token);
 		// fetch the user's details
-		const user = await db.userAccount.findUnique({ where: { id: id! } });
+		const user = await db.userAccount.findUnique({
+			where: { id: payload?.id! },
+		});
 		req.user = user;
 		return next();
 	} catch (error) {
