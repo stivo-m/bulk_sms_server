@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+    provider = "prisma-client-js"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+// enums
+enum PermissionAction {
+    read
+    create
+    update
+    delete
+}
+
+enum Status {
+    active
+    suspended
+}
+
+enum RoleType {
+    system_generated
+    user_generated
+}
+
+enum Resource {
+    roles
+    permissions
+    user_accounts
+    contact_groups
+    contacts
+    messages
+}
+
+// Roles and Permissions
+model Permission {
+    id          String               @id @unique @default(uuid())
+    created_at  DateTime             @default(now())
+    updated_at  DateTime             @updatedAt
+    name        String
+    description String?
+    actions     PermissionAction[]
+    resource    Resource
+    roles       PermissionsOnRoles[]
+}
+
+model Role {
+    id          String               @id @unique @default(uuid())
+    created_at  DateTime             @default(now())
+    updated_at  DateTime             @updatedAt
+    name        String
+    description String?
+    type        RoleType             @default(user_generated)
+    profiles    UserAccount[]
+    permissions PermissionsOnRoles[]
+}
+
+model PermissionsOnRoles {
+    role          Role       @relation(fields: [role_id], references: [id])
+    role_id       String
+    permissions   Permission @relation(fields: [permission_id], references: [id])
+    permission_id String
+    assignedAt    DateTime   @default(now())
+
+    @@id([role_id, permission_id])
+}
+
+// User accounts
+model UserAccount {
+    id             String         @id @unique @default(uuid())
+    created_at     DateTime       @default(now())
+    updated_at     DateTime       @updatedAt
+    role           Role           @relation(fields: [role_id], references: [id])
+    role_id        String
+    first_name     String
+    last_name      String
+    email_address  String         @unique
+    password       String
+    status         Status         @default(active)
+    contact_groups ContactGroup[]
+    contacts       Contact[]
+}
+
+// Contact groups
+model ContactGroup {
+    id            String             @id @unique @default(uuid())
+    created_at    DateTime           @default(now())
+    updated_at    DateTime           @updatedAt
+    status        Status             @default(active)
+    created_by    UserAccount        @relation(fields: [created_by_id], references: [id])
+    created_by_id String
+    name          String
+    description   String?
+    contacts      ContactsOnGroups[]
+}
+
+// Contacts
+model Contact {
+    id            String             @id @unique @default(uuid())
+    created_at    DateTime           @default(now())
+    updated_at    DateTime           @updatedAt
+    status        Status             @default(active)
+    created_by    UserAccount        @relation(fields: [created_by_id], references: [id])
+    groups        ContactsOnGroups[]
+    created_by_id String
+    email_address String
+    phone_number  String
+    surname       String
+    other_names   String?
+}
+
+model ContactsOnGroups {
+    contact          Contact       @relation(fields: [contact_id], references: [id])
+    contact_id       String
+    contact_group    ContactGroup? @relation(fields: [contact_group_id], references: [id])
+    contact_group_id String
+
+    @@id([contact_id, contact_group_id])
+}
