@@ -1,0 +1,9 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "A simple server to be used in handling a simple bulk_sms server",
+  "main": "server.ts",
+  "author": "Steven Maina",
+  "license": "MIT",
+  "private": false
+}
