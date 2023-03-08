@@ -1,8 +1,11 @@
 import express from "express";
+import { authenticate } from "../../application/middleware/auth_middleware/authenticate";
+import permissionRouter from "./private/permission_routes";
 const router = express.Router();
 
-router.use("/health", (req, res) => {
-	return res.status(200).json({ message: "Server is running properly" });
-});
+// public routes
+
+// private routes
+router.use("/permissions", authenticate, permissionRouter);
 
 export default router;
