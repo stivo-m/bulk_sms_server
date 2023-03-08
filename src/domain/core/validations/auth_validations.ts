@@ -7,5 +7,14 @@ export const userAccountValidationSchema = yup.object({
 	last_name: yup.string().required().max(255),
 	email_address: emailValidationSchema,
 	password: yup.string().required().min(6),
-	status: yup.string().nullable().oneOf([Status.active, Status.suspended]),
+	status: yup
+		.string()
+		.nullable()
+		.oneOf([Status.active, Status.suspended])
+		.required(),
+});
+
+export const userLoginValidationSchema = yup.object({
+	email_address: emailValidationSchema,
+	password: yup.string().required().min(6),
 });

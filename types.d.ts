@@ -17,3 +17,7 @@ export { SystemError, SystemResponse };
 export interface RequestWithUser extends Request {
 	user?: UserAccount | null;
 }
+
+export type JWTPayload = {
+	id: string;
+};
