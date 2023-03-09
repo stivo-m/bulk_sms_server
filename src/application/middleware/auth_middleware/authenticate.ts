@@ -28,7 +28,19 @@ export const authenticate = async (
 		// fetch the user's details
 		const user = await db.userAccount.findUnique({
 			where: { id: payload?.id! },
+			include: {
+				role: {
+					include: {
+						permissions: {
+							include: {
+								permissions: true,
+							},
+						},
+					},
+				},
+			},
 		});
+
 		req.user = user;
 		return next();
 	} catch (error) {
