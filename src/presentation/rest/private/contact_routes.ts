@@ -2,43 +2,46 @@ import { PermissionAction, Resource } from "@prisma/client";
 import express from "express";
 import { RequestWithUser, SystemResponse } from "../../../../types";
 import { authorize } from "../../../application/middleware/auth_middleware/authorize";
-import ContactGroupUsecase from "../../../application/usecases/contact_group_usecase";
+import ContactUsecase from "../../../application/usecases/contact_usecase";
 import {
-	contactGroupValidationSchema,
-	updateContactGroupValidationSchema,
-} from "../../../domain/core/validations/contact_group_validation";
-import { ContactGroupRepository } from "../../../infrastructure/repository/contact_group_repository";
-const contactGroupRoutes = express.Router();
-const usecase: ContactGroupUsecase = new ContactGroupUsecase(
-	new ContactGroupRepository(),
-);
+	createContactValidation,
+	createManyContactListValidationSchema,
+} from "../../../domain/core/validations/contact_list_validation";
+import ContactRepository from "../../../infrastructure/repository/contact_repository";
 
-contactGroupRoutes.get(
+const contactsRouter = express.Router();
+const usecase: ContactUsecase = new ContactUsecase(new ContactRepository());
+
+contactsRouter.get(
 	"/",
-	authorize({
-		action: PermissionAction.read,
-		resource: Resource.contact_groups,
-	}),
+	authorize({ action: PermissionAction.read, resource: Resource.contacts }),
 	async (_, res) => {
-		const response = await usecase.findContactGroups();
+		const response = await usecase.findContacts();
 		return res.status(response.status).json({ data: response.data });
 	},
 );
 
-contactGroupRoutes.get(
+contactsRouter.get(
 	"/:id",
-	authorize({
-		action: PermissionAction.read,
-		resource: Resource.contact_groups,
-	}),
+	authorize({ action: PermissionAction.read, resource: Resource.contacts }),
 	async (req, res) => {
 		const { id } = req.params;
-		const response = await usecase.findContactGroupByID(id);
+		const response = await usecase.findContactByID(id);
 		return res.status(response.status).json({ data: response.data });
 	},
 );
 
-contactGroupRoutes.post(
+contactsRouter.delete(
+	"/:id",
+	authorize({ action: PermissionAction.read, resource: Resource.contacts }),
+	async (req, res) => {
+		const { id } = req.params;
+		const response = await usecase.deleteContact(id);
+		return res.status(response.status).json({ data: response.data });
+	},
+);
+
+contactsRouter.post(
 	"/",
 	authorize({
 		action: PermissionAction.create,
@@ -46,12 +49,12 @@ contactGroupRoutes.post(
 	}),
 	async (req: RequestWithUser, res) => {
 		try {
-			const payload = await contactGroupValidationSchema.validate(req.body, {
+			const payload = await createContactValidation.validate(req.body, {
 				abortEarly: false,
 				stripUnknown: true,
 			});
 
-			const response = await usecase.createContactGroup({
+			const response = await usecase.createContact({
 				...payload,
 				created_by_id: req.user!.id,
 			});
@@ -71,26 +74,24 @@ contactGroupRoutes.post(
 	},
 );
 
-contactGroupRoutes.patch(
-	"/:id",
+contactsRouter.post(
+	"/multiple",
 	authorize({
-		action: PermissionAction.update,
+		action: PermissionAction.create,
 		resource: Resource.contact_groups,
 	}),
 	async (req: RequestWithUser, res) => {
 		try {
-			const payload = await updateContactGroupValidationSchema.validate(
+			const payload = await createManyContactListValidationSchema.validate(
 				req.body,
 				{
 					abortEarly: false,
 					stripUnknown: true,
 				},
 			);
-			const { id } = req.params;
 
-			const response = await usecase.updateContactGroup({
+			const response = await usecase.createManyContacts({
 				...payload,
-				id: id,
 				created_by_id: req.user!.id,
 			});
 
@@ -109,17 +110,4 @@ contactGroupRoutes.patch(
 	},
 );
 
-contactGroupRoutes.delete(
-	"/:id",
-	authorize({
-		action: PermissionAction.delete,
-		resource: Resource.contact_groups,
-	}),
-	async (req, res) => {
-		const { id } = req.params;
-		const response = await usecase.deleteContactGroup(id);
-		return res.status(response.status).json({ data: response.data });
-	},
-);
-
-export default contactGroupRoutes;
+export default contactsRouter;

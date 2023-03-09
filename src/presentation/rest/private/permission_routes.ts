@@ -13,7 +13,7 @@ permissionRouter.get(
 	authorize({ action: PermissionAction.read, resource: Resource.permissions }),
 	async (_, res) => {
 		const response = await usecase.findPermissions();
-		return res.status(response.status).json(response.data);
+		return res.status(response.status).json({ data: response.data });
 	},
 );
 
@@ -23,7 +23,7 @@ permissionRouter.get(
 	async (req, res) => {
 		const { id } = req.params;
 		const response = await usecase.findPermission(id);
-		return res.status(response.status).json(response.data);
+		return res.status(response.status).json({ data: response.data });
 	},
 );
 

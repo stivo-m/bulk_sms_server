@@ -23,7 +23,7 @@ userAccountRouter.get(
 	}),
 	async (_, res) => {
 		const response = await usecase.findUsers();
-		return res.status(response.status).json(response.data);
+		return res.status(response.status).json({ data: response.data });
 	},
 );
 
@@ -37,7 +37,7 @@ userAccountRouter.get(
 	async (req, res) => {
 		const { id } = req.params;
 		const response = await usecase.findUserById(id);
-		return res.status(response.status).json(response.data);
+		return res.status(response.status).json({ data: response.data });
 	},
 );
 
@@ -51,7 +51,7 @@ userAccountRouter.get(
 	async (req, res) => {
 		const { email } = req.params;
 		const response = await usecase.findUserByEmail(email);
-		return res.status(response.status).json(response.data);
+		return res.status(response.status).json({ data: response.data });
 	},
 );
 
@@ -70,7 +70,7 @@ userAccountRouter.post(
 			});
 
 			const response = await usecase.createUser(payload);
-			return res.status(response.status).json(response.data);
+			return res.status(response.status).json({ data: response.data });
 		} catch (error) {
 			const err: SystemResponse = {
 				status: 401,
@@ -93,7 +93,7 @@ userAccountRouter.post("/login", async (req, res) => {
 		});
 
 		const response = await usecase.loginUser(payload);
-		return res.status(response.status).json(response.data);
+		return res.status(response.status).json({ data: response.data });
 	} catch (error) {
 		const err: SystemResponse = {
 			status: 401,

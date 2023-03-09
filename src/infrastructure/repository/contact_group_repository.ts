@@ -34,7 +34,11 @@ export class ContactGroupRepository implements IContactGroupInterface {
 			const data = await db.contactGroup.findUnique({
 				where: { id: id },
 				include: {
-					contacts: true,
+					contacts: {
+						include: {
+							contact: true,
+						},
+					},
 					created_by: {
 						select: {
 							id: true,
@@ -70,6 +74,9 @@ export class ContactGroupRepository implements IContactGroupInterface {
 					name: input.name,
 					description: input.description,
 					created_by_id: input.created_by_id,
+				},
+				include: {
+					_count: true,
 				},
 			});
 			return {
